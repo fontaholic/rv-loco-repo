@@ -501,6 +501,16 @@ function part_recordings_shortcode( $atts ) {
 				'part_recording_bass' => '',
 			];
 			break;
+		case 'solo':
+			$get = [
+				'part_recording_solo' => '',
+			];
+			break;
+		case 'choral_mix':
+			$get = [
+				'part_recording_choral_mix' => '',
+			];
+			break;
 	}
 
 	if ( empty( $get ) ) return '';
