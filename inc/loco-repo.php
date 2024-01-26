@@ -351,6 +351,60 @@ function register_today_by_city_shortcode() {
 }
 add_shortcode('register-today-by-city', 'register_today_by_city_shortcode');
 
+// [all-flyers] //////////////////////////////////////// seasonal flyers
+function all_season_flyers_shortcode( ) {
+	ob_start( );
+
+	$args = array(
+		'post_type'      => 'choir_location',
+		'posts_per_page' => -1,
+		'orderby'        => 'title',
+		'order'          => 'ASC',
+	);
+
+	$locations = new WP_Query( $args );
+
+	if ( $locations->have_posts( ) ) {
+		echo '<div id="all-flyers">';
+		echo '<ul class="locations-list">';
+		while ($locations->have_posts( ) ) {
+			$locations->the_post( );
+
+			$location_title   = get_the_title( );
+			$commit_date     = get_field( 'commit_date' );
+			$printable_flyer = get_field( 'printable_flyer' );
+			$digital_flyer   = get_field( 'digital_flyer' );
+			$permalink       = get_permalink(); // Get the permalink
+
+			// Check if concert date has not passed
+			if (strtotime( $commit_date ) >= strtotime(date( 'Y-m-d' ) ) ) {
+				// Format the date
+				$formatted_date = date( 'M j, Y', strtotime( $commit_date ) );
+
+				echo '<li class="location-entry">';
+				echo '<span class="location-details">';
+				echo '<strong><a href="' . esc_url( $permalink ) . '">' . esc_html( $location_title ) . '</a></strong>'; // Use the permalink as the href
+				echo ' -  Enroll by ' . esc_html( $formatted_date) ;
+				echo ' </span><span class="flyer-white"> <i aria-hidden="true" class="fas fa-print"></i> <a href="' . esc_url( $printable_flyer ) . '" target="_blank" download="">Printable flyer</a>';
+				echo ' </span><span class="flyer-black"> <i aria-hidden="true" class="fas fa-share-alt-square"></i> <a href="' . esc_url( $digital_flyer ) . '" target="_blank" download="">Digital flyer</a>';
+				echo '</span>';
+				echo '</li>';
+			}
+		}
+		echo '</ul>';
+		echo '</div>';
+	}
+
+	wp_reset_postdata( );
+
+	return ob_get_clean( );
+}
+
+add_shortcode( 'all-flyers', 'all_season_flyers_shortcode' );
+
+
+
+
 // [auto-playlist] //////////////////////////////////////// register today by city
 function auto_playlist_shortcode( $atts ) {
 
