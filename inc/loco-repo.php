@@ -38,6 +38,8 @@ function city_list_by_state_shortcode() {
 					// Add more elseif conditions as needed for other cities
 				} elseif ($location_name === 'North Shore, MA') {
 					$city_name = 'North Shore';
+				} elseif ($location_name === 'Philadelphia, PA') {
+					$city_name = 'Philadelphia';					
 				}
 				// End Add more elseif conditions as needed for other cities
 
@@ -226,7 +228,7 @@ function all_concert_posters_shortcode() {
 				echo '<strong>' . esc_html($location_title) . '</strong>';
 				echo ' - ' . esc_html($formatted_date);
 				echo ' </span><span class="poster-white"> <i aria-hidden="true" class="fas fa-print"></i> <a href="' . esc_url($printable_poster) . '" target="_blank" download="">Printable Poster</a>';
-				echo ' </span><span class="poster-black"> <i aria-hidden="true" class="fas fa-share-alt-square"></i> <a href="' . esc_url($digital_poster) . '" target="_blank" download="">Digital Poster</a>';
+				echo ' </span><span class="poster-black"> <i aria-hidden="true" class="fas fa-share-alt-square"></i> <a href="' . esc_url($digital_poster) . '" download="">Digital Poster</a>';
 				echo '</span>';
 				echo '</li>';
 			}
@@ -300,6 +302,7 @@ add_action('ac/ready', function () {
 	});
 });
 
+
 // [register-today-by-city] //////////////////////////////////////// register today by city
 
 function register_today_by_city_shortcode() {
@@ -312,7 +315,7 @@ function register_today_by_city_shortcode() {
 		'order'          => 'ASC',
 		'meta_query'     => array(
 			array(
-				'key'     => 'rehearsal_day_and_start_time',
+				'key'     => 'commit_date', // Update the key to 'commit_date'
 				'value'   => date('Y-m-d H:i:s'), // Current date and time
 				'compare' => '>=', // Show only dates in the future
 				'type'    => 'DATETIME',
@@ -320,25 +323,25 @@ function register_today_by_city_shortcode() {
 		),
 	);
 
-	$locations = new WP_Query($args);
+	$locations = new WP_Query( $args );
 
-	if ($locations->have_posts()) {
+	if ( $locations->have_posts() ) {
 		echo '<div class="register-today-by-city">';
-		while ($locations->have_posts()) {
+		while ( $locations->have_posts() ) {
 			$locations->the_post();
-			$location_title = get_the_title();
-			$rehearsal_day_and_start_time = get_field('rehearsal_day_and_start_time');
-			$rehearsal_location = get_field('rehearsal_location');
-			$google_map_link = get_field('google_map_link');
-			$registration_link = get_field('registration_link');
+			$location_title             = get_the_title();
+			$rehearsal_day_and_start_time = get_field( 'rehearsal_day_and_start_time' );
+			$rehearsal_location         = get_field( 'rehearsal_location' );
+			$google_map_link            = get_field( 'google_map_link' );
+			$registration_link          = get_field( 'registration_link' );
 
 			// Check if registration_link is not empty
-			if (!empty($registration_link)) {
+			if ( ! empty( $registration_link ) ) {
 				echo '<div class="city-entry">';
-				echo '<span class="location-title">' . esc_html($location_title) . '</span>';
-				echo '<span class="location-link"><a target="_blank" href="' . esc_url($google_map_link) . '">' . esc_html($rehearsal_location) . '</a></span>';
-				echo '<span class="location-start">' . esc_html($rehearsal_day_and_start_time) . '</span>';
-				echo '<a target="_blank" class="donate-button" href="' . esc_url($registration_link) . '">Join ' . esc_html($location_title) . ' Rock Voices</a>';
+				echo '<span class="location-title">' . esc_html( $location_title ) . '</span>';
+				echo '<span class="location-link"><a target="_blank" href="' . esc_url( $google_map_link ) . '">' . esc_html( $rehearsal_location ) . '</a></span>';
+				echo '<span class="location-start">' . esc_html( $rehearsal_day_and_start_time ) . '</span>';
+				echo '<a target="_blank" class="donate-button" href="' . esc_url( $registration_link ) . '">Join ' . esc_html( $location_title ) . ' Rock Voices</a>';
 				echo '</div>';
 			}
 		}
@@ -349,7 +352,8 @@ function register_today_by_city_shortcode() {
 
 	return ob_get_clean();
 }
-add_shortcode('register-today-by-city', 'register_today_by_city_shortcode');
+add_shortcode( 'register-today-by-city', 'register_today_by_city_shortcode' );
+
 
 // [all-flyers] //////////////////////////////////////// seasonal flyers
 function all_season_flyers_shortcode( ) {
@@ -384,7 +388,7 @@ function all_season_flyers_shortcode( ) {
 				echo '<li class="location-entry">';
 				echo '<span class="location-details">';
 				echo '<strong><a href="' . esc_url( $permalink ) . '">' . esc_html( $location_title ) . '</a></strong>'; // Use the permalink as the href
-				echo ' -  Enroll by ' . esc_html( $formatted_date) ;
+				echo ' -  payment due by ' . esc_html( $formatted_date) ;
 				echo ' </span><span class="flyer-white"> <i aria-hidden="true" class="fas fa-print"></i> <a href="' . esc_url( $printable_flyer ) . '" target="_blank" download="">Printable flyer</a>';
 				echo ' </span><span class="flyer-black"> <i aria-hidden="true" class="fas fa-share-alt-square"></i> <a href="' . esc_url( $digital_flyer ) . '" target="_blank" download="">Digital flyer</a>';
 				echo '</span>';
@@ -401,7 +405,6 @@ function all_season_flyers_shortcode( ) {
 }
 
 add_shortcode( 'all-flyers', 'all_season_flyers_shortcode' );
-
 
 
 
@@ -468,6 +471,7 @@ function auto_playlist_shortcode( $atts ) {
 }
 add_shortcode('auto-playlist', 'auto_playlist_shortcode');
 
+// [part_recordings] ////////////////////////////////////////  part=alto
 function part_recordings_shortcode( $atts ) {
 
 	$songs = function_exists( 'get_field' ) ? get_field( 'song' ) : null;
@@ -506,7 +510,7 @@ function part_recordings_shortcode( $atts ) {
 				'part_recording_solo' => '',
 			];
 			break;
-		case 'choral_mix':
+			case 'choral_mix':
 			$get = [
 				'part_recording_choral_mix' => '',
 			];
@@ -522,7 +526,7 @@ function part_recordings_shortcode( $atts ) {
 			if ( empty( $song[ $field_name ] ) ) continue;
 
 			$links .= sprintf(
-				'<li><a href="%s" download>%s</a></li>',
+				'<li><a href="%s" target="_blank" download>%s</a></li>',
 				esc_url( $song[ $field_name ] ),
 				esc_html(
 					$song['song_title']
@@ -535,3 +539,197 @@ function part_recordings_shortcode( $atts ) {
 	return $links ? "<ul>$links</ul>" : '';
 }
 add_shortcode( 'part-recordings', 'part_recordings_shortcode' );
+
+
+
+
+function auto_playlist_txt_shortcode( $atts ) {
+	$playlist_id = $atts['id'] ?? 0;
+
+	// If no ID is specified in the shortcode, get the latest published playlist
+	if ( empty( $playlist_id ) ) {
+		if ( is_singular( 'playlist' ) ) {
+			$playlist_id = get_queried_object_id();
+		} else {
+			$atts = [];
+
+			$query = new WP_Query( [
+				'posts_per_page'   => 1,
+				'post_type'        => 'playlist', // Corrected post type name
+				'orderby'          => 'date',
+				'order'            => 'DESC',
+				'post_status'      => 'publish',
+				'fields'           => 'ids',
+				'cache_results'    => false,
+				'suppress_filters' => true,
+				'no_found_rows'    => true,
+			] );
+
+			$playlist_id = reset( $query->posts );
+		}
+	}
+
+	if ( empty( $playlist_id ) ) return ''; // No playlist found.
+
+	// Get the playlist repeater field
+	$playlist = function_exists( 'get_field' ) ? get_field( 'song', $playlist_id ) : null;
+
+	if ( $playlist ) {
+
+		$video_ids = '';
+
+		foreach ( $playlist as $song ) {
+			preg_match(
+				'/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|(\S*?[?&]v=))|youtu\.be\/)([a-zA-Z0-9_-]{11})/',
+				$song['youtube_link'],
+				$matches,
+			);
+
+			$video_ids .= $matches[2] . ',';
+
+			// Output each song title and artist
+			echo '<div class="song-details">';
+			echo '<span class="song-title">' . esc_html( $song['song_title'] ) . '</span>';
+			echo ' by ';
+			echo '<span class="artist">' . esc_html( $song['artist'] ) . '</span>';
+			echo '</div>';
+		}
+
+		// Remove the trailing comma from video_ids
+		$video_ids = rtrim( $video_ids, ',' );
+
+		// Format the playlist HTML using sprintf
+		$playlist_html = sprintf(
+			'<div class="auto-playlist-container"><div class="auto-playlist"><iframe width="720" height="405" src="%s" frameborder="0" allowfullscreen></iframe></div></div>',
+			esc_url( sprintf(
+				'https://www.youtube.com/embed/%s?playlist=%s',
+				reset( explode( ',', $video_ids ) ),
+				$video_ids,
+			) )
+		);
+	}
+
+	return $playlist_html ?? '';
+}
+add_shortcode( 'auto-playlist-txt', 'auto_playlist_txt_shortcode' );
+
+
+
+// [part_recordings] ////////////////////////////////////////  part=alto
+
+function playlist_text_shortcode( $atts ) {
+	$playlist_id = $atts['id'] ?? 0;
+
+	// If no ID is specified in the shortcode, get the latest published playlist
+	if ( empty( $playlist_id ) ) {
+		if ( is_singular( 'playlist' ) ) {
+			$playlist_id = get_queried_object_id();
+		} else {
+			$atts = [];
+
+			$query = new WP_Query( [
+				'posts_per_page'   => 1,
+				'post_type'        => 'playlist', // Corrected post type name
+				'orderby'          => 'date',
+				'order'            => 'DESC',
+				'post_status'      => 'publish',
+				'fields'           => 'ids',
+				'cache_results'    => false,
+				'suppress_filters' => true,
+				'no_found_rows'    => true,
+			] );
+
+			$playlist_id = reset( $query->posts );
+		}
+	}
+
+	if ( empty( $playlist_id ) ) return ''; // No playlist found.
+
+	// Get the playlist post data
+	$playlist_post = get_post( $playlist_id );
+	$playlist_title = esc_html( $playlist_post->post_title );
+	$season_field = get_field( 'season', $playlist_id );
+
+	// Get the playlist repeater field
+	$playlist = function_exists( 'get_field' ) ? get_field( 'song', $playlist_id ) : null;
+
+	if ( $playlist ) {
+		// Output playlist name and season
+		echo '<div class="playlist-head">';
+		echo '<strong>' . $playlist_title . ' ' . $season_field . ' Song List</strong>';
+		echo '</div>';
+		// Output each song title linked to the YouTube URL and the artist name
+		echo '<div class="song-list">';
+		foreach ( $playlist as $song ) {
+			$youtube_url = esc_url( $song['youtube_link'] );
+			$song_title = esc_html( $song['song_title'] );
+			$artist_name = esc_html( $song['artist'] );
+
+			echo '<div class="song-details">';
+			echo '<a href="' . $youtube_url . '" target="_blank" rel="noopener">' . $song_title . '</a>';
+			echo '<p class="artist-name">' . $artist_name . '</p>';
+			echo '</div>';
+		}
+		echo '</div>';
+	}
+}
+add_shortcode( 'playlist-text', 'playlist_text_shortcode' );
+
+
+// collapses ACF repeater fields for song list in admin
+function rdsn_acf_repeater_collapse() {
+?>
+<style id="rdsn-acf-repeater-collapse">
+	.acf-repeater .acf-row:not(.-clone) {display:none;}
+	.acf-repeater .acf-row.-active {background-color: lightgreen;}
+</style>
+<script type="text/javascript">
+  jQuery(function($) {
+	$(document).on('click', '.acf-pagination-button', function() {
+	  setTimeout(function() {
+		$('.acf-repeater .acf-row:not(.-clone)').addClass('-collapsed');
+	  }, 200);
+	});
+	$('.acf-repeater .acf-row:not(.-clone)').addClass('-collapsed');
+	$('#rdsn-acf-repeater-collapse').detach();
+  });
+</script>
+<?php
+}
+add_action('acf/input/admin_head', 'rdsn_acf_repeater_collapse');
+
+
+function force_download_headers() {
+	// Check if it's a single post of the 'playlist' post type
+	if (is_singular('playlist')) {
+		// Get the post ID
+		$post_id = get_the_ID();
+
+		// Check if the post has a file field named 'your_mp3_field'
+		$mp3_url = get_field('your_mp3_field', $post_id);
+
+		if ($mp3_url && file_exists($mp3_url)) {
+			// Set headers for MP3 download
+			header('Content-Disposition: attachment; filename="' . get_the_title($post_id) . '.mp3"');
+			header('Content-Type: audio/mpeg');
+			header('Content-Length: ' . filesize($mp3_url));
+
+			// Prevent caching
+			header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+			header('Cache-Control: post-check=0, pre-check=0', false);
+			header('Pragma: no-cache');
+
+			// Output any additional headers you may need
+
+			// Output the MP3 file
+			readfile($mp3_url);
+
+			// Always exit after sending headers
+			exit;
+		}
+	}
+}
+
+// Hook the function to the 'template_redirect' action
+add_action('template_redirect', 'force_download_headers');
+
