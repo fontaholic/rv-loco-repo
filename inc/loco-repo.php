@@ -699,37 +699,4 @@ function rdsn_acf_repeater_collapse() {
 add_action('acf/input/admin_head', 'rdsn_acf_repeater_collapse');
 
 
-function force_download_headers() {
-	// Check if it's a single post of the 'playlist' post type
-	if (is_singular('playlist')) {
-		// Get the post ID
-		$post_id = get_the_ID();
-
-		// Check if the post has a file field named 'your_mp3_field'
-		$mp3_url = get_field('your_mp3_field', $post_id);
-
-		if ($mp3_url && file_exists($mp3_url)) {
-			// Set headers for MP3 download
-			header('Content-Disposition: attachment; filename="' . get_the_title($post_id) . '.mp3"');
-			header('Content-Type: audio/mpeg');
-			header('Content-Length: ' . filesize($mp3_url));
-
-			// Prevent caching
-			header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-			header('Cache-Control: post-check=0, pre-check=0', false);
-			header('Pragma: no-cache');
-
-			// Output any additional headers you may need
-
-			// Output the MP3 file
-			readfile($mp3_url);
-
-			// Always exit after sending headers
-			exit;
-		}
-	}
-}
-
-// Hook the function to the 'template_redirect' action
-add_action('template_redirect', 'force_download_headers');
 
