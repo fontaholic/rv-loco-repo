@@ -543,39 +543,43 @@ add_shortcode( 'part-recordings', 'part_recordings_shortcode' );
 
 add_action(
 	'wp_footer',
-	function() {
-		if ( is_singular() && has_shortcode( get_post()->post_content ?? '', 'part_recordings_shortcode' ) ) {
+	function () {
+		if ( is_singular( 'playlist' ) ) {
 			echo <<<'HTML'
 			<script>document.addEventListener( 'DOMContentLoaded', () => {
-				// Find all links with href attribute ending in ".mp3" and download attribute
-				const mp3Links = document.querySelectorAll('a[href$=".mp3"][download]');
+				const downloadBlob = ( blobUrl, filename ) => {
+					const anchor = document.createElement( 'a' );
+
+					anchor.href = blobUrl;
+					anchor.download = filename;
+					anchor.click();
+
+					URL.revokeObjectURL( blobUrl );
+				}
 
 				// Function to force download
-				const forceDownload = link => {
-					// Create a mouse click event
-					const clickEvent = new MouseEvent('click', {
-						bubbles: true,
-						cancelable: true,
-						view: window
-					});
+				const forceDownload = e => {
+					e.preventDefault();
 
-					// Dispatch the click event
-					link.dispatchEvent(clickEvent);
-				};
+					fetch( e.target.href, { mode: 'no-cors' } )
+						.then( res => res.blob() )
+						.then( blob => {
+							downloadBlob( 
+								window.URL.createObjectURL( blob ), 
+								e.target.href.split( '\\' ).pop().split( '/' ).pop(), 
+							);
+						} )
+						.catch( e => console.error( e ) );
+				}
 
 				// Trigger download for each mp3 link
-				mp3Links.forEach(link => forceDownload(link));
+				document.querySelectorAll( 'a[href$=".mp3"][download]' )
+					.forEach( el => el.addEventListener( 'click', forceDownload ) );
 			} );</script>
 			HTML;
 		}
 	},
 );
-
-
-
-
-
-
 
 
 
