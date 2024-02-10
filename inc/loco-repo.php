@@ -541,6 +541,45 @@ function part_recordings_shortcode( $atts ) {
 add_shortcode( 'part-recordings', 'part_recordings_shortcode' );
 
 
+add_action(
+	'wp_footer',
+	function() {
+		if ( is_singular() && has_shortcode( get_post()->post_content ?? '', 'part_recordings_shortcode' ) ) {
+			echo <<<'HTML'
+			<script>document.addEventListener( 'DOMContentLoaded', () => {
+				// Find all links with href attribute ending in ".mp3" and download attribute
+				const mp3Links = document.querySelectorAll('a[href$=".mp3"][download]');
+
+				// Function to force download
+				const forceDownload = link => {
+					// Create a mouse click event
+					const clickEvent = new MouseEvent('click', {
+						bubbles: true,
+						cancelable: true,
+						view: window
+					});
+
+					// Dispatch the click event
+					link.dispatchEvent(clickEvent);
+				};
+
+				// Trigger download for each mp3 link
+				mp3Links.forEach(link => forceDownload(link));
+			} );</script>
+			HTML;
+		}
+	},
+);
+
+
+
+
+
+
+
+
+
+
 
 
 function auto_playlist_txt_shortcode( $atts ) {
@@ -697,6 +736,5 @@ function rdsn_acf_repeater_collapse() {
 <?php
 }
 add_action('acf/input/admin_head', 'rdsn_acf_repeater_collapse');
-
 
 
