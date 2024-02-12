@@ -471,7 +471,7 @@ function auto_playlist_shortcode( $atts ) {
 }
 add_shortcode('auto-playlist', 'auto_playlist_shortcode');
 
-// [part_recordings] ////////////////////////////////////////  part=alto
+// [part_recordings] ////////////////////////////////////////  part=alto cybr
 function part_recordings_shortcode( $atts ) {
 
 	$songs = function_exists( 'get_field' ) ? get_field( 'song' ) : null;
@@ -541,11 +541,12 @@ function part_recordings_shortcode( $atts ) {
 add_shortcode( 'part-recordings', 'part_recordings_shortcode' );
 
 
+// force mp3 downloads cybr
 add_action(
 	'wp_footer',
 	function () {
-		if ( is_singular( 'playlist' ) ) {
-			echo <<<'HTML'
+		if ( ! is_singular( 'playlist' ) ) return;
+		echo <<<'HTML'
 			<script>document.addEventListener( 'DOMContentLoaded', () => {
 				const downloadBlob = ( blobUrl, filename ) => {
 					const anchor = document.createElement( 'a' );
@@ -560,29 +561,29 @@ add_action(
 				// Function to force download
 				const forceDownload = e => {
 					e.preventDefault();
+					const domain = new URL( window.location.href ).origin;
+					const linkie = new URL( e.target.href.replace( /^(https?:\/\/)[^/]+/, domain ) );
+					linkie.searchParams.append( 'cacheBust', new Date().getTime() );
 
-					fetch( e.target.href, { mode: 'no-cors' } )
+					fetch( linkie, { mode: 'same-origin', cache: 'no-cache', } )
 						.then( res => res.blob() )
 						.then( blob => {
 							downloadBlob( 
 								window.URL.createObjectURL( blob ), 
 								e.target.href.split( '\\' ).pop().split( '/' ).pop(), 
 							);
+							URL.revokeObjectURL( blob );
 						} )
 						.catch( e => console.error( e ) );
-				}
+			}
 
-				// Trigger download for each mp3 link
-				document.querySelectorAll( 'a[href$=".mp3"][download]' )
-					.forEach( el => el.addEventListener( 'click', forceDownload ) );
-			} );</script>
-			HTML;
-		}
+			// Trigger download for each mp3 link
+			document.querySelectorAll( 'a[href$=".mp3"][download]' )
+				.forEach( el => el.addEventListener( 'click', forceDownload ) );
+		} );</script>
+		HTML;
 	},
 );
-
-
-
 
 
 
