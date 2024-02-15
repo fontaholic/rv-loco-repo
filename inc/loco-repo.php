@@ -743,3 +743,51 @@ function rdsn_acf_repeater_collapse() {
 add_action('acf/input/admin_head', 'rdsn_acf_repeater_collapse');
 
 
+
+function choir_location_buttons_shortcode($atts) {
+	ob_start();
+
+	$atts = shortcode_atts(array(), $atts, 'choir_location_buttons');
+	
+	// Get the current page's director term (assuming the director taxonomy is associated with the choir_location post type)
+	$terms = get_the_terms(get_the_ID(), 'director');
+
+	if ($terms && !is_wp_error($terms)) {
+		$director_slug = $terms[0]->slug;
+		
+		// Query to get choir locations based on the director
+		$args = array(
+			'post_type' => 'choir_location',
+			'tax_query' => array(
+				array(
+					'taxonomy' => 'director',
+					'field'    => 'slug',
+					'terms'    => $director_slug,
+				),
+			),
+		);
+
+		$locations = new WP_Query($args);
+
+		if ($locations->have_posts()) {
+			while ($locations->have_posts()) {
+				$locations->the_post();
+				$location_title = get_the_title();
+				$location_permalink = get_permalink();
+
+				// Output button for each location
+				echo '<a href="' . esc_url($location_permalink) . '" class="elementor-button elementor-button-link elementor-size-sm">' . esc_html($location_title) . '</a>';
+			}
+
+			wp_reset_postdata();
+		} else {
+			echo '<p>No choir locations found for the director.</p>';
+		}
+	} else {
+		echo '<p>No director term found for the current page.</p>';
+	}
+
+	return ob_get_clean();
+}
+add_shortcode('choir_location_buttons', 'choir_location_buttons_shortcode');
+
