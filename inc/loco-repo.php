@@ -478,6 +478,11 @@ function part_recordings_shortcode( $atts ) {
 
 	if ( empty( $songs ) ) return '';
 
+	// Sort the songs array alphabetically based on the 'song_title' key
+	usort( $songs, function( $a, $b ) {
+		return strcmp( $a['song_title'], $b['song_title'] );
+	} );
+
 	switch ( $atts['part'] ?? '' ) {
 		case 'soprano':
 			$get = [
@@ -510,7 +515,7 @@ function part_recordings_shortcode( $atts ) {
 				'part_recording_solo' => '',
 			];
 			break;
-			case 'choral_mix':
+		case 'choral_mix':
 			$get = [
 				'part_recording_choral_mix' => '',
 			];
@@ -538,6 +543,7 @@ function part_recordings_shortcode( $atts ) {
 
 	return $links ? "<ul>$links</ul>" : '';
 }
+
 add_shortcode( 'part-recordings', 'part_recordings_shortcode' );
 
 
