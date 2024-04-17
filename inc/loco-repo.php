@@ -535,22 +535,36 @@ function part_recordings_shortcode( $atts ) {
 
 	$links = '';
 
-	foreach ( $songs as $song ) {
+foreach ( $songs as $song ) {
 		foreach ( $get as $field_name => $affix ) {
 			if ( empty( $song[ $field_name ] ) ) continue;
-
+	
+			$file_path = str_replace(['https://rockvoices.com', 'https://www.rockvoices.com'], '/home/rockvoices_vps/rv2022/', $song[ $field_name ]);
+			
+			// Check if file exists
+			if ( ! file_exists( $file_path ) ) {
+				// Add error message if file does not exist
+				$links .= sprintf(
+					'<li>Error: File %s does not exist</li>',
+					esc_html( basename( $file_path ) )
+				);
+				continue;
+			}
+	
+			// Get and format modified date
+			$modified_date = date( 'F j, Y', filemtime( $file_path ) );
+	
 			$links .= sprintf(
-				'<li><a href="%s" target="_blank" download>%s</a></li>',
-				esc_url( $song[ $field_name ] ),
-				esc_html(
-					$song['song_title']
-						. ( $affix ? " - $affix" : '' )
-				),
+				'<li><a href="%s" target="_blank" download>%s</a> <span class="modified-date">%s</span></li>', // Add modified date
+				esc_url( $file_path ),
+				esc_html( $song['song_title'] . ( $affix ? " - $affix" : '' ) ),
+				$modified_date
 			);
 		}
 	}
 
-	return $links ? "<ul>$links</ul>" : '';
+
+	return $links ? "<ul class='parts'>$links</ul>" : '';
 }
 
 add_shortcode( 'part-recordings', 'part_recordings_shortcode' );
@@ -878,5 +892,14 @@ function random_flyer_shortcode() {
 	return $output;
 }
 add_shortcode('random_flyer', 'random_flyer_shortcode');
+
+
+
+
+
+
+
+
+
 
 
