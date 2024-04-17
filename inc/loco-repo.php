@@ -207,6 +207,8 @@ function all_concert_posters_shortcode() {
 
 	$locations = new WP_Query($args);
 
+	$has_posters = false;
+
 	if ($locations->have_posts()) {
 		echo '<div id="all-concert-posters">';
 		echo '<ul class="locations-list">';
@@ -223,17 +225,32 @@ function all_concert_posters_shortcode() {
 				// Format the date
 				$formatted_date = date('M j, Y - g:i A', strtotime($concert_date));
 
-				echo '<li class="location-entry">';
-				echo '<span class="location-details">';
-				echo '<strong>' . esc_html($location_title) . '</strong>';
-				echo ' - ' . esc_html($formatted_date);
-				echo ' </span><span class="poster-white"> <i aria-hidden="true" class="fas fa-print"></i> <a href="' . esc_url($printable_poster) . '" target="_blank" download="">Printable Poster</a>';
-				echo ' </span><span class="poster-black"> <i aria-hidden="true" class="fas fa-share-alt-square"></i> <a href="' . esc_url($digital_poster) . '" download="">Digital Poster</a>';
-				echo '</span>';
-				echo '</li>';
+				if (!empty($printable_poster) || !empty($digital_poster)) {
+					echo '<li class="location-entry">';
+					echo '<span class="location-details">';
+					echo '<strong><a href="' . esc_url(get_permalink()) . '">' . esc_html($location_title) . '</a></strong>';
+					echo ' - ' . esc_html($formatted_date);
+					echo ' </span><span class="poster-white"> <i aria-hidden="true" class="fas fa-print"></i> <a href="' . esc_url($printable_poster) . '" target="_blank" download="">Printable Poster</a>';
+					echo ' </span><span class="poster-black"> <i aria-hidden="true" class="fas fa-share-alt-square"></i> <a href="' . esc_url($digital_poster) . '" download="">Digital Poster</a>';
+					echo '</span>';
+					echo '</li>';
+
+					$has_posters = true;
+				}
 			}
 		}
 		echo '</ul>';
+
+		if (!$has_posters) {
+			echo 'Our concerts have passed. Please check back next season!';
+		} else {
+			echo '<span style="font-size:small;">* concert posters are not yet available for all cities, please be patient.</span>';
+		}
+
+		echo '</div>';
+	} else {
+		echo '<div id="all-concert-posters">';
+		echo 'Our concerts have passed. Please check back next season!';
 		echo '</div>';
 	}
 
@@ -338,13 +355,18 @@ function register_today_by_city_shortcode() {
 			// Check if registration_link is not empty
 			if ( ! empty( $registration_link ) ) {
 				echo '<div class="city-entry">';
-				echo '<span class="location-title">' . esc_html( $location_title ) . '</span>';
+				echo '<span class="location-title"><a href="' . esc_url( get_permalink() ) . '">' . esc_html( $location_title ) . '</a></span>';
 				echo '<span class="location-link"><a target="_blank" href="' . esc_url( $google_map_link ) . '">' . esc_html( $rehearsal_location ) . '</a></span>';
 				echo '<span class="location-start">' . esc_html( $rehearsal_day_and_start_time ) . '</span>';
 				echo '<a target="_blank" class="donate-button" href="' . esc_url( $registration_link ) . '">Join ' . esc_html( $location_title ) . ' Rock Voices</a>';
 				echo '</div>';
 			}
 		}
+		echo '</div>';
+	} else {
+		// If no upcoming choir locations are found
+		echo '<div class="register-today-by-city">';
+		echo 'Registration for our next season will begin in a few weeks. Check back!';
 		echo '</div>';
 	}
 
@@ -353,6 +375,7 @@ function register_today_by_city_shortcode() {
 	return ob_get_clean();
 }
 add_shortcode( 'register-today-by-city', 'register_today_by_city_shortcode' );
+
 
 
 // [all-flyers] //////////////////////////////////////// seasonal flyers
@@ -781,4 +804,79 @@ function choir_location_buttons_shortcode($atts) {
 	return ob_get_clean();
 }
 add_shortcode('choir_location_buttons', 'choir_location_buttons_shortcode');
+
+
+
+// Shortcode to display the next concert poster
+function next_concert_poster_shortcode() {
+	$current_date = date('Y-m-d');
+
+	$args = array(
+		'post_type'      => 'choir_location',
+		'meta_key'       => 'concert_date',
+		'orderby'        => 'meta_value',
+		'order'          => 'ASC',
+		'posts_per_page' => 1,
+		'meta_query'     => array(
+			'relation' => 'AND',
+			array(
+				'key'     => 'digital_poster',
+				'value'   => '',
+				'compare' => '!='
+			),
+			array(
+				'key'     => 'concert_date',
+				'value'   => $current_date,
+				'compare' => '>='
+			)
+		)
+	);
+
+	$query = new WP_Query($args);
+
+	if ($query->have_posts()) {
+		$query->the_post();
+		$poster_url = get_field('digital_poster');
+		$output = '<img src="' . $poster_url . '" alt="Concert Poster">';
+	} else {
+		$output = 'No upcoming concert posters found.';
+	}
+
+	wp_reset_postdata();
+
+	return $output;
+}
+add_shortcode('next_concert_poster', 'next_concert_poster_shortcode');
+
+// Shortcode to display a random flyer
+function random_flyer_shortcode() {
+	$args = array(
+		'post_type' => 'choir_location',
+		'posts_per_page' => 1,
+		'meta_query' => array(
+			array(
+				'key' => 'digital_flyer',
+				'value' => '',
+				'compare' => '!='
+			)
+		),
+		'orderby' => 'rand'
+	);
+
+	$query = new WP_Query($args);
+
+	if ($query->have_posts()) {
+		$query->the_post();
+		$flyer_url = get_field('digital_flyer');
+		$output = '<img src="' . $flyer_url . '" alt="Flyer">';
+	} else {
+		$output = 'No flyers found.';
+	}
+
+	wp_reset_postdata();
+
+	return $output;
+}
+add_shortcode('random_flyer', 'random_flyer_shortcode');
+
 
