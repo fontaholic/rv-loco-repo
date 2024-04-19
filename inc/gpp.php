@@ -47,3 +47,15 @@ add_filter( 'generate_sidebar_layout', function( $layout ) {
 
 	return $layout;
 } );
+
+
+function current_year_shortcode() {
+	// Get the current year
+	$current_year = date('Y');
+
+	// Return the year inside a span
+	return '<span class="current-year">' . $current_year . '</span>';
+}
+add_shortcode('current_year', 'current_year_shortcode');
+
+
