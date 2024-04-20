@@ -818,44 +818,62 @@ add_shortcode('choir_location_buttons', 'choir_location_buttons_shortcode');
 
 // Shortcode to display the next concert poster
 function next_concert_poster_shortcode() {
-	$current_date = date('Y-m-d');
+	// Get the current date
+	$current_date = date( 'Y-m-d' );
 
+	// Query for the next concert date
 	$args = array(
 		'post_type'      => 'choir_location',
 		'meta_key'       => 'concert_date',
 		'orderby'        => 'meta_value',
 		'order'          => 'ASC',
-		'posts_per_page' => 1,
+		'posts_per_page' => -1,
 		'meta_query'     => array(
 			'relation' => 'AND',
 			array(
-				'key'     => 'digital_poster',
-				'value'   => '',
-				'compare' => '!='
-			),
-			array(
 				'key'     => 'concert_date',
 				'value'   => $current_date,
-				'compare' => '>='
-			)
-		)
+				'compare' => '=',
+				'type'    => 'DATE', // Specify the value type as DATE
+			),
+			array(
+				'key'     => 'digital_poster',
+				'value'   => '',
+				'compare' => '!=',
+			),
+		),
 	);
 
-	$query = new WP_Query($args);
+	$query = new WP_Query( $args );
 
-	if ($query->have_posts()) {
-		$query->the_post();
-		$poster_url = get_field('digital_poster');
-		$output = '<img src="' . $poster_url . '" alt="Concert Poster">';
+	if ( $query->have_posts() ) {
+		// Collect poster URLs for the next concert date
+		$poster_urls = array();
+		while ( $query->have_posts() ) {
+			$query->the_post();
+			$poster_url = get_field( 'digital_poster' );
+			if ( ! empty( $poster_url ) ) {
+				$poster_urls[] = $poster_url;
+			}
+		}
+
+		// Randomize the poster URLs
+		if ( ! empty( $poster_urls ) ) {
+			$random_poster_url = $poster_urls[ array_rand( $poster_urls ) ];
+			$output            = '<img src="' . $random_poster_url . '" alt="Concert Poster">';
+		} else {
+			$output = 'No concert posters found for today.';
+		}
+
+		wp_reset_postdata();
 	} else {
-		$output = 'No upcoming concert posters found.';
+		$output = 'No upcoming concerts found.';
 	}
-
-	wp_reset_postdata();
 
 	return $output;
 }
-add_shortcode('next_concert_poster', 'next_concert_poster_shortcode');
+add_shortcode( 'next_concert_poster', 'next_concert_poster_shortcode' );
+
 
 // Shortcode to display a random flyer
 function random_flyer_shortcode() {
