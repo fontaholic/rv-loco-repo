@@ -822,7 +822,7 @@ function next_concert_poster_shortcode() {
 	$current_date = date( 'Y-m-d' );
 
 	// Query for the next concert date
-	$args = array(
+$args = array(
 		'post_type'      => 'choir_location',
 		'meta_key'       => 'concert_date',
 		'orderby'        => 'meta_value',
@@ -833,8 +833,8 @@ function next_concert_poster_shortcode() {
 			array(
 				'key'     => 'concert_date',
 				'value'   => $current_date,
-				'compare' => '=',
-				'type'    => 'DATE', // Specify the value type as DATE
+				'compare' => '>=',  // Change this line to get concerts from today onwards
+				'type'    => 'DATE',
 			),
 			array(
 				'key'     => 'digital_poster',
